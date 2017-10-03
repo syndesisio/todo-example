@@ -1,13 +1,4 @@
 <?php
-  // In case you need to setup the DB schema:
-  //
-  // CREATE DATABASE todo;
-  // CREATE USER test WITH PASSWORD 'test';
-  // GRANT ALL PRIVILEGES ON DATABASE todo to test;
-  // \c todo;
-  // CREATE TABLE todo (id SERIAL PRIMARY KEY, task VARCHAR, completed INTEGER);
-
-
   $DB_SERVER="127.0.0.1";
   $DB_NAME="todo";
   $DB_USER="test";
@@ -26,10 +17,13 @@
     $DB_PASS = $_ENV["TODO_DB_PASS"];  
   }  
   $connection = pg_connect("host=".$DB_SERVER." dbname=".$DB_NAME." user=".$DB_USER." password=".$DB_PASS);
-
-  // 1. Create a database connection
   if ( !$connection ) {
     die("Database connection failed: " . pg_last_error());
+  }
+
+  $result = pg_query($connection, "CREATE TABLE IF NOT EXISTS  todo (id SERIAL PRIMARY KEY, task VARCHAR, completed INTEGER);");  
+  if ( !$result ) {
+    die("Could not create tables.");
   }
 
   # Check for task
