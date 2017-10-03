@@ -1,6 +1,6 @@
 # TODO App Example
 
-This is an example php application, which tracks todo items.
+This is a simple php application, which tracks todo items in a PostgreSQL DB.
 
 ## How to deploy
 
