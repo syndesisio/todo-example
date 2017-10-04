@@ -5,29 +5,29 @@
   $DB_PASS="test";
 
   if ( $_ENV["TODO_DB_SERVER"] ) {
-    $DB_SERVER = $_ENV["TODO_DB_SERVER"];  
+    $DB_SERVER = $_ENV["TODO_DB_SERVER"];
   }
   if ( $_ENV["TODO_DB_NAME"] ) {
-    $DB_NAME = $_ENV["TODO_DB_NAME"];  
+    $DB_NAME = $_ENV["TODO_DB_NAME"];
   }
   if ( $_ENV["TODO_DB_USER"] ) {
-    $DB_USER = $_ENV["TODO_DB_USER"];  
+    $DB_USER = $_ENV["TODO_DB_USER"];
   }
   if ( $_ENV["TODO_DB_PASS"] ) {
-    $DB_PASS = $_ENV["TODO_DB_PASS"];  
-  }  
+    $DB_PASS = $_ENV["TODO_DB_PASS"];
+  }
   $connection = pg_connect("host=".$DB_SERVER." dbname=".$DB_NAME." user=".$DB_USER." password=".$DB_PASS);
   if ( !$connection ) {
     die("Database connection failed: " . pg_last_error());
   }
 
-  $result = pg_query($connection, "CREATE TABLE IF NOT EXISTS  todo (id SERIAL PRIMARY KEY, task VARCHAR, completed INTEGER);");  
+  $result = pg_query($connection, "CREATE TABLE IF NOT EXISTS  todo (id SERIAL PRIMARY KEY, task VARCHAR, completed INTEGER);");
   if ( !$result ) {
     die("Could not create tables.");
   }
 
   # Check for task
-  if ( isset( $_POST['action'] ) && $_POST['action'] !== "" ) {   
+  if ( isset( $_POST['action'] ) && $_POST['action'] !== "" ) {
     $result = false;
     if( $_POST['action'] == "add" ) {
       $data = array("task"=>$_POST['task'], "completed"=>"0");
@@ -42,7 +42,7 @@
       $data = array();
       if( $selected ) {
         $data = $selected[0];
-        if ( $data["completed"]==1 ) { 
+        if ( $data["completed"]==1 ) {
           $data["completed"]=0;
         } else {
           $data["completed"]=1;
@@ -103,37 +103,53 @@
     <br>
     <br>
     <div class="container">
+      <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+          <ul class="list-group">
+
+
 
 <?php
 
-  $result = pg_query($connection, "SELECT id, task, completed FROM todo order by id");  
+  $result = pg_query($connection, "SELECT id, task, completed FROM todo order by id");
   while ( $row = pg_fetch_array($result) ) {
-        echo "    <form method='post'>";
+        echo "    <li class='list-group-item'>";
+        echo "    <form class='form-inline' method='post'>";
         echo "        <input type='hidden' name='id' value='", $row[0], "'/>";
-        echo "        <button name='action' value='check'>";
+        echo "        <div class='form-group'>";
+        echo "        <button class='btn btn-success' name='action' value='check'>";
         if( $row[2]==1 ) {
-          echo "         <span>Checked</span>";
+          echo "         <span class='glyphicon glyphicon-ok'></span>";
         } else {
-          echo "         <span>Unchecked</span>";
+          echo "         <span class='glyphicon'>&nbsp;</span>";
         }
         echo "        </button>";
-        echo "        <input name='task' value='", $row[1], "' />";
-        echo "        <button name='action' value='update'>";
+        echo "        <input class='form-control' name='task' value='", $row[1], "' placeholder='Enter TODO item...' />";
+        echo "        <button class='btn btn-primary' name='action' value='update'>";
         echo "            <span>Update</span>";
         echo "        </button>";
-        echo "        <button name='action' value='delete'>";
+        echo "        <button class='btn btn-danger' name='action' value='delete'>";
         echo "            <span>Delete</span>";
         echo "        </button>";
+        echo "    </div>";
         echo "    </form>";
+        echo "    </li>";
   }
 ?>
-    <br>
-      <form method='post'>
-          <input name='task' value=''/>
-          <button name='action' value='add'>
-              <span>Add</span>
-          </button>
-      </form>
+          <li class="list-group-item">
+            <form class="form-inline" method='post'>
+              <div class="form-group">
+                <input class="form-control" name='task' value='' placeholder="Enter TODO item..."/>
+                <button class="btn btn-success" name='action' value='add'>
+                    <span>Add</span>
+                </div>
+              </div>
+            </form>
+          </li>
+          </ul>
+
+        </div>
+      </div>
 
     </div><!-- /.container -->
 
