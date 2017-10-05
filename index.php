@@ -72,7 +72,7 @@
     <meta name="author" content="">
     <link rel="icon" href="favicon.ico">
 
-    <title>APPUiO PHP Demo</title>
+    <title>Todo App</title>
 
     <!-- Bootstrap core CSS -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
