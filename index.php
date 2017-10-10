@@ -88,10 +88,22 @@
       <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
+
+    <style type="text/css">
+      .form-inline .form-group  {
+        display: flex;
+        width: 100%;
+      }
+      .form-control {
+        flex:1;
+      }
+      .ml {
+        margin-left:5px;
+      }
+    </style>    
   </head>
 
   <body>
-
     <nav class="navbar navbar-inverse navbar-fixed-top">
       <div class="container">
         <div class="navbar-header">
@@ -124,11 +136,11 @@
           echo "         <span class='glyphicon'>&nbsp;</span>";
         }
         echo "        </button>";
-        echo "        <input class='form-control' name='task' value='", $row[1], "' placeholder='Enter TODO item...' />";
-        echo "        <button class='btn btn-primary' name='action' value='update'>";
+        echo "        <input class='ml form-control' name='task' value='", $row[1], "' placeholder='Enter TODO item...' />";
+        echo "        <button class='ml btn btn-primary' name='action' value='update'>";
         echo "            <span>Update</span>";
         echo "        </button>";
-        echo "        <button class='btn btn-danger' name='action' value='delete'>";
+        echo "        <button class='ml btn btn-danger' name='action' value='delete'>";
         echo "            <span>Delete</span>";
         echo "        </button>";
         echo "    </div>";
@@ -140,7 +152,7 @@
             <form class="form-inline" method='post'>
               <div class="form-group">
                 <input class="form-control" name='task' value='' placeholder="Enter TODO item..."/>
-                <button class="btn btn-success" name='action' value='add'>
+                <button class="ml btn btn-success" name='action' value='add'>
                     <span>Add</span>
                 </div>
               </div>
