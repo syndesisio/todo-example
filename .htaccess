@@ -1,0 +1,2 @@
+RewriteEngine on
+RewriteRule ^api/?[0-9]*$ api.php
