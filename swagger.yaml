@@ -136,4 +136,6 @@ definitions:
         type: "integer"
         title: "Task completition status"
         description: "0 - ongoing, 1 - completed"
-        enum: [0, 1]
+        minimum: 0
+        maximum: 1
+
