@@ -11,6 +11,13 @@
   $DB_PASS="test";
   $AMQ_USER="amq";
   $AMQ_PASS="topSecret";
+  $AMQ_DEFAULT_MESSAGE = <<< "EOD"
+<?xml version="1.0" encoding="UTF-8"?>
+<inventoryReceived>"
+  <item id="XYZ123" damaged="false" vendor="Good Inc."/>
+  <item id="ABC789" damaged="true" vendor="Bad Inc."/>
+</inventoryReceived>
+EOD;
 
   if ( $_ENV["TODO_DB_SERVER"] ) {
     $DB_SERVER = $_ENV["TODO_DB_SERVER"];
@@ -85,8 +92,9 @@
       $amq_result = "success";
     } catch (StompException $e) {
       die("Failed to send message: " . $e);
+    } finally {
+      $stomp->disconnect();
     }
-    $stomp->disconnect();
 
     header( 'Location: index.php?amqMsg=' .urlencode($amq_result) );
   }
@@ -173,11 +181,7 @@
                 <form class='form-inline' method='post'>
                 <div class='form-group'>
                   <textarea class='ml form-control' rows='6' name='message'><?php
-echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-echo "<inventoryReceived>\n";
-echo "<item id=\"XYZ123\" damaged=\"false\" vendor=\"Good Inc.\"/>\n";
-echo "<item id=\"ABC789\" damaged=\"true\" vendor=\"Bad Inc.\"/>\n";
-echo "</inventoryReceived>\n";
+                      echo $AMQ_DEFAULT_MESSAGE;
                   ?></textarea>
 
                 </div><br />
@@ -249,14 +253,12 @@ echo "</inventoryReceived>\n";
     <script>window.jQuery || document.write('<script src="js/vendor/jquery.min.js"><\/script>')</script>
     <script src="js/bootstrap.min.js"></script>
     <script type="text/javascript">
-      $(document).ready(function(){
-        $("#toggleForm").click(function(){
-          $("#jmsForm").toggle( "fast", function() {
+      $(function() {
+        $('#toggleForm').click(function() {
+          $("#jmsForm").toggle( "fast");
+          $("#jmsToggle").toggle( "fast");
         });
-          $("#jmsToggle").toggle( "fast", function() {
-          });
       });
-    });
     </script>
   </body>
 </html>
