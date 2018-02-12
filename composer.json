@@ -1,0 +1,5 @@
+{
+    "require": {
+        "stomp-php/stomp-php": "^4.3"
+    }
+}

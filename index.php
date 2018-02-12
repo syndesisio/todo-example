@@ -1,8 +1,23 @@
 <?php
+  require __DIR__ . '/vendor/autoload.php';
+
+  use Stomp\Client;
+  use Stomp\Exception\StompException;
+  use Stomp\Stomp;
+
   $DB_SERVER="127.0.0.1";
   $DB_NAME="todo";
   $DB_USER="test";
   $DB_PASS="test";
+  $AMQ_USER="amq";
+  $AMQ_PASS="topSecret";
+  $AMQ_DEFAULT_MESSAGE = <<< "EOD"
+<?xml version="1.0" encoding="UTF-8"?>
+<inventoryReceived>"
+  <item id="XYZ123" damaged="false" vendor="Good Inc."/>
+  <item id="ABC789" damaged="true" vendor="Bad Inc."/>
+</inventoryReceived>
+EOD;
 
   if ( $_ENV["TODO_DB_SERVER"] ) {
     $DB_SERVER = $_ENV["TODO_DB_SERVER"];
@@ -15,6 +30,12 @@
   }
   if ( $_ENV["TODO_DB_PASS"] ) {
     $DB_PASS = $_ENV["TODO_DB_PASS"];
+  }
+  if ( $_ENV["TODO_AMQ_USER"] ) {
+    $AMQ_USER = $_ENV["TODO_AMQ_USER"];
+  }
+  if ( $_ENV["TODO_AMQ_PASS"] ) {
+    $AMQ_PASS = $_ENV["TODO_AMQ_PASS"];
   }
   $connection = pg_connect("host=".$DB_SERVER." dbname=".$DB_NAME." user=".$DB_USER." password=".$DB_PASS);
   if ( !$connection ) {
@@ -59,6 +80,25 @@
     }
     header( 'Location: index.php');
   }
+
+  if ( isset( $_POST['amq'] ) && $_POST['amq'] == "send" ) {
+    $amq_result = "";
+    $stomp = new Client('tcp://broker-amq-tcp:61613');
+    $stomp->setLogin($AMQ_USER, $AMQ_PASS);
+    try {
+      $stomp->connect();
+      $message = trim($_POST['message']);
+      $stomp->send('/queue/inventoryReceived', $message);
+      $amq_result = "success";
+    } catch (StompException $e) {
+      die("Failed to send message: " . $e);
+    } finally {
+      $stomp->disconnect();
+    }
+
+    header( 'Location: index.php?amqMsg=' .urlencode($amq_result) );
+  }
+
 ?>
 
 <!DOCTYPE html>
@@ -100,7 +140,7 @@
       .ml {
         margin-left:5px;
       }
-    </style>    
+    </style>
   </head>
 
   <body>
@@ -115,6 +155,46 @@
     <br>
     <br>
     <div class="container">
+      <div id="jmsToggle" class="row">
+        <div class="col-md-8 col-md-offset-2">
+          <ul class="list-group">
+              <li class='list-group-item'>
+                <div class='form-group'>
+                  <button class='ml btn btn-primary' id="toggleForm">
+                    <span>Show JMS Form</span>
+                  </button>
+                  <?php
+                    if ( isset ( $_GET['amqMsg'] ) && $_GET['amqMsg'] == "success" ) {
+                      echo "  <span>Message sent successfully</span>\n";
+                    }
+                  ?>
+                </div>
+              </form>
+              </li>
+          </ul>
+        </div>
+      </div>
+      <div id="jmsForm" class="row" style="display:none">
+        <div class="col-md-8 col-md-offset-2">
+          <ul class="list-group">
+              <li class='list-group-item'>
+                <form class='form-inline' method='post'>
+                <div class='form-group'>
+                  <textarea class='ml form-control' rows='6' name='message'><?php
+                      echo $AMQ_DEFAULT_MESSAGE;
+                  ?></textarea>
+
+                </div><br />
+                <div class='form-group'>
+                  <button class='ml btn btn-primary' name='amq' value='send'>
+                    <span>Send JMS Message</span>
+                  </button>
+                </div>
+              </form>
+              </li>
+          </ul>
+        </div>
+    </div>
       <div class="row">
         <div class="col-md-8 col-md-offset-2">
           <ul class="list-group">
@@ -172,5 +252,13 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <script>window.jQuery || document.write('<script src="js/vendor/jquery.min.js"><\/script>')</script>
     <script src="js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+      $(function() {
+        $('#toggleForm').click(function() {
+          $("#jmsForm").toggle( "fast");
+          $("#jmsToggle").toggle( "fast");
+        });
+      });
+    </script>
   </body>
 </html>
