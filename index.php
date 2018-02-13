@@ -13,7 +13,7 @@
   $AMQ_PASS="topSecret";
   $AMQ_DEFAULT_MESSAGE = <<< "EOD"
 <?xml version="1.0" encoding="UTF-8"?>
-<inventoryReceived>"
+<inventoryReceived>
   <item id="XYZ123" damaged="false" vendor="Good Inc."/>
   <item id="ABC789" damaged="true" vendor="Bad Inc."/>
 </inventoryReceived>
