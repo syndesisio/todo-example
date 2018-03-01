@@ -1,4 +1,4 @@
----
+<?php header('Content-Type: text/vnd.yaml') ?>---
 swagger: "2.0"
 info:
   title: "Todo App API"
@@ -7,7 +7,7 @@ info:
   license:
     name: "Apache 2.0"
     url: "http://www.apache.org/licenses/LICENSE-2.0.html"
-host: "hostname"
+host: "<?php echo $_SERVER['HTTP_HOST'] ?>"
 basePath: /api
 schemes:
   - "http"
