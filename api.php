@@ -33,10 +33,16 @@
     case "GET":
       if ($has_id) {
         $data = pg_select($connection , "todo", array("id" => $id));
+        if (sizeof($data) > 0) {
+            $data = $data[0];
+            $result = TRUE;
+        } else {
+            http_response_code(404);
+        }
       } else {
         $data = pg_fetch_all(pg_query($connection, "SELECT id, task, completed FROM todo"));
+        $result = TRUE;
       }
-      $result = TRUE;
       break;
     case "PUT":
       $data = json_decode(file_get_contents("php://input"), true);
