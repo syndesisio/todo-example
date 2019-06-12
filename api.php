@@ -1,6 +1,8 @@
 <?php
   $DB_SERVER="127.0.0.1";
   $DB_NAME="todo";
+  $DB_TABLE_NAME="todo";
+  $DB_SCHEMA="";
   $DB_USER="test";
   $DB_PASS="test";
 
@@ -9,6 +11,10 @@
   }
   if ( $_ENV["TODO_DB_NAME"] ) {
     $DB_NAME = $_ENV["TODO_DB_NAME"];
+  }
+  if ( $_ENV["TODO_DB_SCHEMA"] ) {
+    $DB_SCHEMA = $_ENV["TODO_DB_SCHEMA"];
+    $DB_SCHEMA = $DB_SCHEMA.".";
   }
   if ( $_ENV["TODO_DB_USER"] ) {
     $DB_USER = $_ENV["TODO_DB_USER"];
@@ -32,7 +38,7 @@
   switch ($method) {
     case "GET":
       if ($has_id) {
-        $data = pg_select($connection , "todo", array("id" => $id));
+        $data = pg_select($connection , $DB_SCHEMA.$DB_TABLE_NAME, array("id" => $id));
         if (sizeof($data) > 0) {
             $data = $data[0];
             $result = TRUE;
@@ -40,19 +46,19 @@
             http_response_code(404);
         }
       } else {
-        $data = pg_fetch_all(pg_query($connection, "SELECT id, task, completed FROM todo"));
+        $data = pg_fetch_all(pg_query($connection, "SELECT id, task, completed FROM ".$DB_SCHEMA.$DB_TABLE_NAME));
         $result = TRUE;
       }
       break;
     case "PUT":
       $data = json_decode(file_get_contents("php://input"), true);
-      $result = pg_update($connection , "todo", $data, array("id" => $id));
+      $result = pg_update($connection , $DB_SCHEMA.$DB_TABLE_NAME, $data, array("id" => $id));
       $data = array();
       break;
     case "POST":
       $given = json_decode(file_get_contents("php://input"), true);
       $data = array("task" => $given["task"], "completed" => (int)$given["completed"]);
-      $result = pg_query_params($connection, "INSERT INTO todo (task, completed) VALUES ($1, $2) RETURNING id", array($data["task"], $data["completed"]));
+      $result = pg_query_params($connection, "INSERT INTO ".$DB_SCHEMA.$DB_TABLE_NAME." (task, completed) VALUES ($1, $2) RETURNING id", array($data["task"], $data["completed"]));
       if ($result) {
         $data = array("id" => pg_fetch_array($result)["id"], "task" => $given["task"], "completed" => $given["completed"]);
         http_response_code(201);
@@ -60,7 +66,7 @@
       break;
     case "DELETE":
       $condition = array("id" => $id);
-      $result = pg_delete($connection, "todo", $condition);
+      $result = pg_delete($connection, $DB_SCHEMA.$DB_TABLE_NAME, $condition);
       http_response_code(204);
       break;
   }

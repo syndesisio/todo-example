@@ -7,6 +7,8 @@
 
   $DB_SERVER="127.0.0.1";
   $DB_NAME="todo";
+  $DB_TABLE_NAME="todo";
+  $DB_SCHEMA="";
   $DB_USER="test";
   $DB_PASS="test";
   $AMQ_USER="amq";
@@ -25,6 +27,10 @@ EOD;
   if ( $_ENV["TODO_DB_NAME"] ) {
     $DB_NAME = $_ENV["TODO_DB_NAME"];
   }
+  if ( $_ENV["TODO_DB_SCHEMA"] ) {
+    $DB_SCHEMA = $_ENV["TODO_DB_SCHEMA"];
+    $DB_SCHEMA = $DB_SCHEMA.".";
+  }
   if ( $_ENV["TODO_DB_USER"] ) {
     $DB_USER = $_ENV["TODO_DB_USER"];
   }
@@ -42,7 +48,7 @@ EOD;
     die("Database connection failed: " . pg_last_error());
   }
 
-  $result = pg_query($connection, "CREATE TABLE IF NOT EXISTS  todo (id SERIAL PRIMARY KEY, task VARCHAR, completed INTEGER);");
+  $result = pg_query($connection, "CREATE TABLE IF NOT EXISTS ".$DB_TABLE_NAME." (id SERIAL PRIMARY KEY, task VARCHAR, completed INTEGER);");
   if ( !$result ) {
     die("Could not create tables.");
   }
@@ -52,14 +58,14 @@ EOD;
     $result = false;
     if( $_POST['action'] == "add" ) {
       $data = array("task"=>$_POST['task'], "completed"=>"0");
-      $result = pg_insert($connection , "todo", $data);
+      $result = pg_insert($connection , $DB_SCHEMA.$DB_TABLE_NAME, $data);
     } else if( $_POST['action'] == "update" ) {
       $data = array("task"=>$_POST['task']);
       $condition = array("id"=>$_POST['id'],);
-      $result = pg_update($connection , "todo", $data, $condition);
+      $result = pg_update($connection , $DB_SCHEMA.$DB_TABLE_NAME, $data, $condition);
     } else if( $_POST['action'] == "check" ) {
       $condition = array("id"=>$_POST['id'],);
-      $selected = pg_select($connection , "todo", $condition);
+      $selected = pg_select($connection , $DB_SCHEMA.$DB_TABLE_NAME, $condition);
       $data = array();
       if( $selected ) {
         $data = $selected[0];
@@ -70,10 +76,10 @@ EOD;
         }
       }
       $data["task"]=$_POST['task'];
-      $result = pg_update($connection , "todo", $data, $condition);
+      $result = pg_update($connection , $DB_SCHEMA.$DB_TABLE_NAME, $data, $condition);
     } else if( $_POST['action'] == "delete" ) {
       $condition = array("id"=>$_POST['id'],);
-      $result = pg_delete($connection , "todo", $condition);
+      $result = pg_delete($connection , $DB_SCHEMA.$DB_TABLE_NAME, $condition);
     }
     if ( !$result ) {
       die("Insert failed: " . pg_last_error());
@@ -203,7 +209,7 @@ EOD;
 
 <?php
 
-  $result = pg_query($connection, "SELECT id, task, completed FROM todo order by id");
+  $result = pg_query($connection, "SELECT id, task, completed FROM ".$DB_SCHEMA.$DB_TABLE_NAME." order by id");
   while ( $row = pg_fetch_array($result) ) {
         echo "    <li class='list-group-item'>";
         echo "    <form class='form-inline' method='post'>";
