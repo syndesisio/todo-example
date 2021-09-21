@@ -94,7 +94,7 @@ EOD;
     try {
       $stomp->connect();
       $message = trim($_POST['message']);
-      $stomp->send('/queue/inventoryReceived', $message);
+      $stomp->send('inventoryReceived', $message);
       $amq_result = "success";
     } catch (StompException $e) {
       die("Failed to send message: " . $e);
